@@ -1,0 +1,10 @@
+C:\Users\acleite\source\repos\CollectWords\CollectWords\bin\Debug\CollectWords.exe.config
+C:\Users\acleite\source\repos\CollectWords\CollectWords\bin\Debug\CollectWords.exe
+C:\Users\acleite\source\repos\CollectWords\CollectWords\bin\Debug\CollectWords.pdb
+C:\Users\acleite\source\repos\CollectWords\CollectWords\obj\Debug\CollectWords.Form1.resources
+C:\Users\acleite\source\repos\CollectWords\CollectWords\obj\Debug\CollectWords.Properties.Resources.resources
+C:\Users\acleite\source\repos\CollectWords\CollectWords\obj\Debug\CollectWords.csproj.GenerateResource.cache
+C:\Users\acleite\source\repos\CollectWords\CollectWords\obj\Debug\CollectWords.csproj.CoreCompileInputs.cache
+C:\Users\acleite\source\repos\CollectWords\CollectWords\obj\Debug\CollectWords.exe
+C:\Users\acleite\source\repos\CollectWords\CollectWords\obj\Debug\CollectWords.pdb
+C:\Users\acleite\source\repos\CollectWords\CollectWords\obj\Debug\CollectWords.csprojAssemblyReference.cache

@@ -5,5 +5,8 @@
     <Setting Name="FileTypes" Type="System.String" Scope="User">
       <Value Profile="(Default)">c</Value>
     </Setting>
+    <Setting Name="TargetFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">c:\</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

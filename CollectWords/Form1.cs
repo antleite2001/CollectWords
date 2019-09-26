@@ -15,6 +15,9 @@ namespace CollectWords
 {
   public partial class Form1 : Form
   {
+    private List<string> excludeList = new List<string>() { "void", "#ifndef", "#if", "#endif", "#define", "if", "else", "return", "for", "while", "enum", "#include", "#ifdef" };
+    private char[] delimiters = new char[] { '!', ' ', ',', ';', '=', ')', '(', '\"', '&', '[', ']', '{', '}' };
+    private bool isMultiLineComment = false;
     private DriveInfo[] allDrives;
     private List<Tuple<string, List<Tuple<string, List<int>>>>> wordsOccurence = new List<Tuple<string, List<Tuple<string, List<int>>>>>();
     private List<Tuple<string, List<int>>> filesOccurence;
@@ -241,34 +244,59 @@ namespace CollectWords
 
     private void StartCollectingWordsFromFiles()
     {
-      char[] delimiters = new char[] { ' ', ',', ';', '=', ')', '(', '\"', '&', '[', ']', '{', '}' };
 
       Properties.Settings.Default.FileTypes = tbFileType.Text;
       Properties.Settings.Default.Save();
       //Get File Types
       string[] fileTypes = tbFileType.Text.Split(' ', ',', ';');
+      int i;
+      string word = "";
+      string[] linessplited;
+      string[] lines;
+      string[] files;
+      int linecount = 0;
       foreach (string fileType in fileTypes)
       {
 
         foreach (DataGridViewRow f in dgvFoldersToScan.Rows)
         {
-          string[] files = Directory.GetFiles(f.Cells[0].Value.ToString(), "*." + fileType, SearchOption.AllDirectories);
+          files = Directory.GetFiles(f.Cells[0].Value.ToString(), "*." + fileType, SearchOption.AllDirectories);
           foreach (string file in files)
           {
 
-            Debug.WriteLine(file);
-            string[] lines = File.ReadAllLines(file);
-            int linecount = 0;
+            lines = File.ReadAllLines(file);
+            linecount = 0;
             foreach (string line in lines)
             {
               linecount++;
-              string[] linessplited = line.Split(delimiters);
+              linessplited = line.Split(delimiters);
               foreach (string linesplited in linessplited)
               {
-                string word = linesplited.Trim();
-                if (!word.Equals(""))
+                word = linesplited.Trim();
+                i = word.IndexOf(@"//");
+                if (i >= 0)
                 {
+                  word = word.Remove(i);
+                }
+                else
+                {
+                  i = word.IndexOf(@"/*");
+                  isMultiLineComment = false;
+                  if (i >= 0) //multiline comment started
+                  {
+                    isMultiLineComment = true;
+                    word = word.Remove(i);
+                    ;
+                  }
+                }
+
+                if (!word.Equals("") && !excludeList.Contains(word))
+                {
+
                   InsertWordIntoList(word, file, linecount);
+                  lblMsg.Text = word;
+                  lblMsg.Refresh();
+
                 }
               }
             }
@@ -568,15 +596,20 @@ namespace CollectWords
           {
             dgvFoundWords.Rows[row.Index].Selected = true;
             dgvFoundWords.FirstDisplayedScrollingRowIndex = row.Index;
-            break;
+            return;
           }
         }
 
+        dgvFoundWords.ClearSelection();
+        dgv1.Rows.Clear();
+        dgv2.Rows.Clear();
 
       }
       else
       {
         dgvFoundWords.ClearSelection();
+        dgv1.Rows.Clear();
+        dgv2.Rows.Clear();
       }
     }
 
@@ -588,6 +621,14 @@ namespace CollectWords
     private void checkBox25_CheckedChanged(object sender, EventArgs e)
     {
 
+    }
+
+    private void dgv1_DoubleClick(object sender, EventArgs e)
+    {
+      if (dgv1.SelectedRows.Count == 1)
+      {
+        Process.Start(dgv1.SelectedRows[0].Cells[0].Value.ToString());
+      }
     }
   }
 }

@@ -15,8 +15,13 @@ namespace CollectWords
 {
   public partial class Form1 : Form
   {
-    private List<string> excludeList = new List<string>() { "void", "#ifndef", "#if", "#endif", "#define", "if", "else", "return", "for", "while", "enum", "#include", "#ifdef" };
-    private char[] delimiters = new char[] { '!', ' ', ',', ';', '=', ')', '(', '\"', '&', '[', ']', '{', '}' };
+    private List<string> excludeList = new List<string>()
+    { "if", "else", "switch", "case", "default","void","break","int", "float", "char", "double", "long",
+      "auto", "signed", "const", "extern", "register", "unsigned","continue","return", "for", "while", "do", "enum",
+      "sizeof","struct", "typedef", "union","volatile",
+      "#ifndef", "#if", "#else","#endif", "#define", "#include", "#ifdef","#undef", "#pragma"    };
+    private char[] delimiters = new char[]
+    { ' ','!',  ',', ';', '=', ')', '(', '\"', '&', '[', ']', '{', '}','<','>', '-', '+', '%','^', '|' };
     private bool isMultiLineComment = false;
     private DriveInfo[] allDrives;
     private List<Tuple<string, List<Tuple<string, List<int>>>>> wordsOccurence = new List<Tuple<string, List<Tuple<string, List<int>>>>>();

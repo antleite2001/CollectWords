@@ -15,14 +15,55 @@ namespace CollectWords
 {
   public partial class Form1 : Form
   {
+    private Stopwatch sw = new Stopwatch();
+
+    private support s = new support();
+    //C:\Users\acleite\Documents\Bosch Steering Wheel\Task6191\DirImplementationSet\ImplementationSet\BSW\CUBAS\var01\inc\Platform_Types.h
     private List<string> excludeList = new List<string>()
     { "if", "else", "switch", "case", "default","void","break","int", "float", "char", "double", "long",
       "auto", "signed", "const", "extern", "register", "unsigned","continue","return", "for", "while", "do", "enum",
-      "sizeof","struct", "typedef", "union","volatile",
-      "#ifndef", "#if", "#else","#endif", "#define", "#include", "#ifdef","#undef", "#pragma"    };
+      "sizeof","struct", "typedef", "union","volatile","#ifndef", "#if", "#else","#endif", "#define",
+      "#include", "#ifdef","#undef", "#pragma","sint8","sint16","uint16","sint32","sint64","uint32","uint64","float32",
+      "float64","boolean","sint8_least","uint8_least","sint16_least","uint16_least","sint32_least","uint32_least",
+      "tUI16","tUI32","tUI8","uint8"};
+
+
+    //All words starting with this list will not be included in the wordsOccurence List
+    private List<string> excludestartwith = new List<string>()
+    { "0","1","2","3","4","5","6","7","8","9" };
+
     private char[] delimiters = new char[]
-    { ' ','!',  ',', ';', '=', ')', '(', '\"', '&', '[', ']', '{', '}','<','>', '-', '+', '%','^', '|' };
-    private bool isMultiLineComment = false;
+    { '~',
+      ':',
+      '?',
+      '.',
+      '\'',
+      '*',
+      '/',
+      '\t',
+      ' ',
+      '!',
+      ',',
+      ';',
+      '=',
+      ')',
+      '(',
+      '\"',
+      '&',
+      '[',
+      ']',
+      '{',
+      '}',
+      '<',
+      '>',
+      '-',
+      '+',
+      '%',
+      '^',
+      '|' };
+
+
+    private bool isInMultiLineComment = false;
     private DriveInfo[] allDrives;
     private List<Tuple<string, List<Tuple<string, List<int>>>>> wordsOccurence = new List<Tuple<string, List<Tuple<string, List<int>>>>>();
     private List<Tuple<string, List<int>>> filesOccurence;
@@ -37,8 +78,9 @@ namespace CollectWords
       InitializeComponent();
 
 
-      dgv1.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-      dgv2.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+      dgv1.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      dgv2.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      dgvFoundWords.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 
 
 
@@ -65,7 +107,6 @@ namespace CollectWords
     {
       ShowAll();
 
-
     }
 
 
@@ -86,7 +127,7 @@ namespace CollectWords
           {
             foreach (int LineCount in filename.Item2)
             {
-              dgv1.Rows.Add(filename.Item1, LineCount);
+              dgv1.Rows.Add(Path.GetFileName(filename.Item1), LineCount, filename.Item1);
 
             }
           }
@@ -221,7 +262,8 @@ namespace CollectWords
         string[] lines = File.ReadAllLines(filename);
         foreach (string line in lines)
         {
-          dgv2.Rows.Add(line);
+
+          dgv2.Rows.Add(line.Replace("\t", " "));
         }
       }
       //Select linenumber
@@ -241,7 +283,7 @@ namespace CollectWords
       if (dgv1.SelectedRows.Count == 1)
       {
 
-        LoadFileToDgv2(dgv1.SelectedRows[0].Cells[0].Value.ToString(),
+        LoadFileToDgv2(dgv1.SelectedRows[0].Cells[2].Value.ToString(),
           Convert.ToInt32(dgv1.SelectedRows[0].Cells[1].Value));
       }
     }
@@ -249,7 +291,7 @@ namespace CollectWords
 
     private void StartCollectingWordsFromFiles()
     {
-
+      sw.Restart();
       Properties.Settings.Default.FileTypes = tbFileType.Text;
       Properties.Settings.Default.Save();
       //Get File Types
@@ -260,69 +302,105 @@ namespace CollectWords
       string[] lines;
       string[] files;
       int linecount = 0;
+      string linetemp = "";
       foreach (string fileType in fileTypes)
       {
+
+        FoundFiles.HeaderText = "Found files type (" + fileType + ")";
+
 
         foreach (DataGridViewRow f in dgvFoldersToScan.Rows)
         {
           files = Directory.GetFiles(f.Cells[0].Value.ToString(), "*." + fileType, SearchOption.AllDirectories);
           foreach (string file in files)
           {
+            dgvFoundFiles.Rows.Add(Path.GetFileName(file));
+          }
+
+          dgvFoundFiles.Refresh();
+
+          foreach (string file in files)
+          {
+            for (int v = 0; v < dgvFoundFiles.Rows.Count; v++)
+            {
+              if (file.Contains(dgvFoundFiles.Rows[v].Cells[0].Value.ToString()))
+              {
+                dgvFoundFiles.Rows.RemoveAt(v);
+                break;
+              }
+            }
+            dgvFoundFiles.Refresh();
 
             lines = File.ReadAllLines(file);
             linecount = 0;
             foreach (string line in lines)
             {
               linecount++;
-              linessplited = line.Split(delimiters);
+              linetemp = line;
+              s.removecomment(0, ref linetemp, ref isInMultiLineComment);
+              linessplited = linetemp.Split(delimiters);
               foreach (string linesplited in linessplited)
               {
                 word = linesplited.Trim();
-                i = word.IndexOf(@"//");
-                if (i >= 0)
+                if (!string.IsNullOrEmpty(word) && !excludeList.Contains(word) &&
+                  !excludestartwith.Any(w => word.StartsWith(w)))
                 {
-                  word = word.Remove(i);
-                }
-                else
-                {
-                  i = word.IndexOf(@"/*");
-                  isMultiLineComment = false;
-                  if (i >= 0) //multiline comment started
-                  {
-                    isMultiLineComment = true;
-                    word = word.Remove(i);
-                    ;
-                  }
-                }
-
-                if (!word.Equals("") && !excludeList.Contains(word))
-                {
-
                   InsertWordIntoList(word, file, linecount);
                   lblMsg.Text = word;
                   lblMsg.Refresh();
-
+                  ShowElapsedTime();
                 }
               }
             }
-
           }
         }
       }
-
-      //dgvFoundWords.Rows.Clear();
-      //foreach (Tuple<string, List<Tuple<string, List<int>>>> wordsOccurence in wordsOccurence)
-      //{
-      //  dgvFoundWords.Rows.Add(wordsOccurence.Item1);
-      //}
+      sw.Stop();
     }
 
-
+    private void ShowElapsedTime()
+    {
+      if (sw.Elapsed.TotalHours > 1.0)
+      {
+        lblTimeElapsed.Text = sw.Elapsed.TotalHours.ToString() + " (h)";
+      }
+      else if (sw.Elapsed.TotalMinutes > 1.0)
+      {
+        lblTimeElapsed.Text = sw.Elapsed.TotalMinutes.ToString() + " (m)";
+      }
+      else if (sw.Elapsed.TotalSeconds > 1.0)
+      {
+        lblTimeElapsed.Text =
+               sw.Elapsed.TotalSeconds.ToString() + " (s)";
+      }
+      else
+      {
+        lblTimeElapsed.Text =
+          sw.Elapsed.TotalMilliseconds.ToString() + " (ms)";
+      }
+      lblTimeElapsed.Refresh();
+    }
 
     private void btnStart_Click(object sender, EventArgs e)
     {
+      dgv1.Rows.Clear();
+      dgv2.Rows.Clear();
+      dgvFoundWords.Rows.Clear();
+
+      lblTimeElapsed.Text = "";
+      dgv1.Refresh();
+      dgv2.Refresh();
+      dgvFoundWords.Refresh();
+      Refresh();
+
+
+
       StartCollectingWordsFromFiles();
+
       lblMsg.Text = "Finished";
+
+
+
       ShowAll();
     }
 
@@ -368,62 +446,7 @@ namespace CollectWords
 
 
 
-    //Fills wordsOccurence with well known words files and lines. Just for Debug
-    private void fillwordsOccurence()
-    {
-      word = "word1";
 
-      linesOccurence = new List<int>() { 1, 2, 3, 4, 5 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file1.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-      linesOccurence = new List<int>() { 3, 7 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file2.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-
-
-      linesOccurence = new List<int>() { 1, 5, 7, 9, 12 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file3.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-
-
-      linesOccurence = new List<int>() { 2, 7, 15, 18 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file4.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-
-      word = "word2";
-
-      linesOccurence = new List<int>() { 3, 7 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file2.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-
-      linesOccurence = new List<int>() { 1, 2, 4, 9, 12 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file3.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-      linesOccurence = new List<int>() { 3, 6, 7, 12, 15 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file4.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-      word = "word3";
-      linesOccurence = new List<int>() { 1, 2, 3, 4, 5 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file1.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-      linesOccurence = new List<int>() { 1, 5, 6, 7, 8 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file3.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-
-      linesOccurence = new List<int>() { 5, 9, 13, 19 };
-      filesOccurence = new List<Tuple<string, List<int>>>() { new Tuple<string, List<int>>("c:\temp\temp\file4.c", linesOccurence) };
-      wordsOccurence.Add(new Tuple<string, List<Tuple<string, List<int>>>>(word, new List<Tuple<string, List<int>>>(filesOccurence)));
-
-    }
 
     #region FolderSelectDialogCLS
     /// <summary>
@@ -585,11 +608,23 @@ namespace CollectWords
         //Try to find equal
         foreach (DataGridViewRow row in dgvFoundWords.Rows)
         {
-          if (row.Cells[0].Value.ToString().ToUpper().StartsWith(tbFilter.Text.ToUpper()))
+          if (cbCaseSensitive.Checked)
           {
-            dgvFoundWords.Rows[row.Index].Selected = true;
-            dgvFoundWords.FirstDisplayedScrollingRowIndex = row.Index;
-            return;
+            if (row.Cells[0].Value.ToString().StartsWith(tbFilter.Text))
+            {
+              dgvFoundWords.Rows[row.Index].Selected = true;
+              dgvFoundWords.FirstDisplayedScrollingRowIndex = row.Index;
+              return;
+            }
+          }
+          else
+          {
+            if (row.Cells[0].Value.ToString().ToUpper().StartsWith(tbFilter.Text.ToUpper()))
+            {
+              dgvFoundWords.Rows[row.Index].Selected = true;
+              dgvFoundWords.FirstDisplayedScrollingRowIndex = row.Index;
+              return;
+            }
           }
         }
 
@@ -597,11 +632,23 @@ namespace CollectWords
         //Try to find inside any position
         foreach (DataGridViewRow row in dgvFoundWords.Rows)
         {
-          if (row.Cells[0].Value.ToString().ToUpper().Contains(tbFilter.Text.ToUpper()))
+          if (cbCaseSensitive.Checked)
           {
-            dgvFoundWords.Rows[row.Index].Selected = true;
-            dgvFoundWords.FirstDisplayedScrollingRowIndex = row.Index;
-            return;
+            if (row.Cells[0].Value.ToString().Contains(tbFilter.Text))
+            {
+              dgvFoundWords.Rows[row.Index].Selected = true;
+              dgvFoundWords.FirstDisplayedScrollingRowIndex = row.Index;
+              return;
+            }
+          }
+          else
+          {
+            if (row.Cells[0].Value.ToString().ToUpper().Contains(tbFilter.Text.ToUpper()))
+            {
+              dgvFoundWords.Rows[row.Index].Selected = true;
+              dgvFoundWords.FirstDisplayedScrollingRowIndex = row.Index;
+              return;
+            }
           }
         }
 
@@ -632,8 +679,18 @@ namespace CollectWords
     {
       if (dgv1.SelectedRows.Count == 1)
       {
-        Process.Start(dgv1.SelectedRows[0].Cells[0].Value.ToString());
+        Process.Start(dgv1.SelectedRows[0].Cells[2].Value.ToString());
       }
+    }
+
+    private void dgv2_DoubleClick(object sender, EventArgs e)
+    {
+      Process.Start(dgv1.SelectedRows[0].Cells[2].Value.ToString());
+    }
+
+    private void cbCaseSensitive_CheckedChanged(object sender, EventArgs e)
+    {
+
     }
   }
 }

@@ -46,5 +46,16 @@ namespace CollectWords.Properties {
                 this["TargetFolder"] = value;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\\db1.mdf;Integ" +
+            "rated Security=True")]
+        public string db1ConnectionString {
+            get {
+                return ((string)(this["db1ConnectionString"]));
+            }
+        }
     }
 }

@@ -62,6 +62,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="db1DataSet.cs">
+      <DependentUpon>db1DataSet.xsd</DependentUpon>
+    </Compile>
     <Compile Include="db1DataSet.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

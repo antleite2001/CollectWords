@@ -10,12 +10,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using CollectWords.db1DataSetTableAdapters;
 namespace CollectWords
 {
   public partial class Form1 : Form
   {
     private Stopwatch sw = new Stopwatch();
+    QueriesTableAdapter qta = new QueriesTableAdapter();
 
     private support s = new support();
     //C:\Users\acleite\Documents\Bosch Steering Wheel\Task6191\DirImplementationSet\ImplementationSet\BSW\CUBAS\var01\inc\Platform_Types.h
@@ -33,35 +34,10 @@ namespace CollectWords
     { "0","1","2","3","4","5","6","7","8","9" };
 
     private char[] delimiters = new char[]
-    { '~',
-      ':',
-      '?',
-      '.',
-      '\'',
-      '*',
-      '/',
-      '\t',
-      ' ',
-      '!',
-      ',',
-      ';',
-      '=',
-      ')',
-      '(',
-      '\"',
-      '&',
-      '[',
-      ']',
-      '{',
-      '}',
-      '<',
-      '>',
-      '-',
-      '+',
-      '%',
-      '^',
-      '|' };
+    { '~',':', '?','.','\'','*','/','\t',' ','!',',',';', '=',')','(',
+      '\"','&','[',']','{','}','<','>','-','+','%','^','|' };
 
+    string[] fileTypes = new string[] { "c", "h" };
 
     private bool isInMultiLineComment = false;
     private DriveInfo[] allDrives;
@@ -78,9 +54,7 @@ namespace CollectWords
       InitializeComponent();
 
 
-      dgv1.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      dgv2.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      dgvFoundWords.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+
 
 
 
@@ -158,98 +132,88 @@ namespace CollectWords
 
 
 
-    private void cbFolders_TextChanged(object sender, EventArgs e)
-    {
-      //FillcbFolders(cbFolders.Text);
-    }
+
 
     private void btnDefineFolders_Click(object sender, EventArgs e)
     {
 
       FolderSelectDialog dialog = new FolderSelectDialog
       {
-        InitialDirectory = clbSelectDrive.CheckedItems[0].ToString(),// Properties.Settings.Default.TargetFolder,
-        Title = "Select a folder to save your screen captures"
+        InitialDirectory = @"C:\",
+        Title = "Select a folder to start Collecting words"
       };
 
       if (dialog.Show())
       {
         if (Directory.Exists(dialog.FileName))
         {
-          dgvFoldersToScan.Rows.Add(dialog.FileName);
+          lblFolderToCollectWords.Text = dialog.FileName;
+          btnStartCollectingWords.Enabled = true;
 
         }
-
-      }
-    }
-
-    private void btnRescanDrivers_Click(object sender, EventArgs e)
-    {
-
-    }
-
-    private void ReScanDrives()
-    {
-      //Get Drives
-      clbSelectDrive.Items.Clear();
-      allDrives = DriveInfo.GetDrives();
-      foreach (DriveInfo d in allDrives)
-      {
-        if (d.IsReady)
+        else
         {
-
-          clbSelectDrive.Items.Add(d.Name);
-
+          lblFolderToCollectWords.Text = "Folder doesn't exist";
+          btnStartCollectingWords.Enabled = false;
         }
+
       }
     }
+
+
+
 
 
     private void Form1_Load(object sender, EventArgs e)
     {
-      btnStart.Enabled = false;
+      dgv1.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Consolas", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      dgv2.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Consolas", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      dgvFoundWords.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Consolas", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+
+
+      // TODO: This line of code loads data into the 'db1DataSet.Projects' table. You can move, or remove it, as needed.
+      this.tAProjects.Fill(this.db1DataSet.Projects);
+      btnStartCollectingWords.Enabled = false;
       btnDefineFolders.Enabled = false;
 
-      tbFileType.Text = Properties.Settings.Default.FileTypes;
+
+      //dgvTasks not visible
+      gbTasks.Visible = false;
+
+      gbTasks.Location = new System.Drawing.Point(12, 207);
 
 
+      //NewTask not Visible
+      gbNewTask.Visible = false;
 
-      ReScanDrives();
-    }
-
-    private void clbSelectDrive_ItemCheck(object sender, ItemCheckEventArgs e)
-    {
-      btnDefineFolders.Enabled = e.NewValue == CheckState.Checked;
-      if (e.NewValue == CheckState.Checked && clbSelectDrive.CheckedItems.Count > 0)
-      {
-        clbSelectDrive.ItemCheck -= clbSelectDrive_ItemCheck;
-        clbSelectDrive.SetItemChecked(clbSelectDrive.CheckedIndices[0], false);
-        clbSelectDrive.ItemCheck += clbSelectDrive_ItemCheck;
-
-      }
+      lblFolderToCollectWords.Text = "";
+      btnDefineFolders.Enabled = false;
+      btnStartCollectingWords.Enabled = false;
 
     }
 
 
-    private void dgvFoldersToScan_MouseClick(object sender, MouseEventArgs e)
-    {
-      if (e.Button == MouseButtons.Right)
-      {
-        ContextMenu m = new ContextMenu();
-        m.MenuItems.Add(new MenuItem("Cut"));
 
 
-        int currentMouseOverRow = dgvFoldersToScan.HitTest(e.X, e.Y).RowIndex;
+    //private void dgvFoldersToScan_MouseClick(object sender, MouseEventArgs e)
+    //{
+    //  if (e.Button == MouseButtons.Right)
+    //  {
+    //    ContextMenu m = new ContextMenu();
+    //    m.MenuItems.Add(new MenuItem("Cut"));
 
-        if (currentMouseOverRow >= 0)
-        {
-          dgvFoldersToScan.Rows[currentMouseOverRow].Selected = true;
-        }
 
-        m.Show(dgvFoldersToScan, new Point(e.X, e.Y));
+    //    int currentMouseOverRow = dgvFoldersToScan.HitTest(e.X, e.Y).RowIndex;
 
-      }
-    }
+    //    if (currentMouseOverRow >= 0)
+    //    {
+    //      dgvFoldersToScan.Rows[currentMouseOverRow].Selected = true;
+    //    }
+
+    //    m.Show(dgvFoldersToScan, new Point(e.X, e.Y));
+
+    //  }
+    //}
 
 
 
@@ -292,10 +256,7 @@ namespace CollectWords
     private void StartCollectingWordsFromFiles()
     {
       sw.Restart();
-      Properties.Settings.Default.FileTypes = tbFileType.Text;
-      Properties.Settings.Default.Save();
-      //Get File Types
-      string[] fileTypes = tbFileType.Text.Split(' ', ',', ';');
+
       int i;
       string word = "";
       string[] linessplited;
@@ -309,9 +270,10 @@ namespace CollectWords
         FoundFiles.HeaderText = "Found files type (" + fileType + ")";
 
 
-        foreach (DataGridViewRow f in dgvFoldersToScan.Rows)
+        //foreach (DataGridViewRow f in dgvFoldersToScan.Rows)
         {
-          files = Directory.GetFiles(f.Cells[0].Value.ToString(), "*." + fileType, SearchOption.AllDirectories);
+          //files = Directory.GetFiles(f.Cells[0].Value.ToString(), "*." + fileType, SearchOption.AllDirectories);
+          files = Directory.GetFiles(lblFolderToCollectWords.Text, "*." + fileType, SearchOption.AllDirectories);
           foreach (string file in files)
           {
             dgvFoundFiles.Rows.Add(Path.GetFileName(file));
@@ -321,6 +283,8 @@ namespace CollectWords
 
           foreach (string file in files)
           {
+
+            //Remove file from the dgvFoundFiles
             for (int v = 0; v < dgvFoundFiles.Rows.Count; v++)
             {
               if (file.Contains(dgvFoundFiles.Rows[v].Cells[0].Value.ToString()))
@@ -383,25 +347,7 @@ namespace CollectWords
 
     private void btnStart_Click(object sender, EventArgs e)
     {
-      dgv1.Rows.Clear();
-      dgv2.Rows.Clear();
-      dgvFoundWords.Rows.Clear();
 
-      lblTimeElapsed.Text = "";
-      dgv1.Refresh();
-      dgv2.Refresh();
-      dgvFoundWords.Refresh();
-      Refresh();
-
-
-
-      StartCollectingWordsFromFiles();
-
-      lblMsg.Text = "Finished";
-
-
-
-      ShowAll();
     }
 
     private void InsertWordIntoList(string word, string file, int linecount)
@@ -441,7 +387,7 @@ namespace CollectWords
 
     private void tbFileType_TextChanged(object sender, EventArgs e)
     {
-      btnStart.Enabled = tbFileType.TextLength > 0;
+
     }
 
 
@@ -691,6 +637,148 @@ namespace CollectWords
     private void cbCaseSensitive_CheckedChanged(object sender, EventArgs e)
     {
 
+    }
+
+
+
+    private void dgvProjects_SelectionChanged(object sender, EventArgs e)
+    {
+      //Project Changed
+      if (dgvProjects.SelectedRows.Count == 1)
+      {
+        int IdProject = Convert.ToInt32(dgvProjects.SelectedRows[0].Cells[1].Value);
+        this.tasksTableAdapter.FillTasksByProjectId(this.db1DataSet.Tasks, IdProject);
+        dgvTasks.ClearSelection();
+
+        gbSelectAction.Text = $"Select Action Related to Project {dgvProjects.SelectedRows[0].Cells[0].Value.ToString()}";
+      }
+    }
+
+    private void rbCollectNewTasksWords_CheckedChanged(object sender, EventArgs e)
+    {
+      if (dgvProjects.SelectedRows.Count == 1 && rbCollectNewTasksWords.Checked)
+      {
+        //Hide gbTasks
+        gbTasks.Visible = false;
+
+
+        //Show tbNewTask
+        gbNewTask.Visible = true;
+
+
+      }
+      else
+      {
+        //Hide gbTasks
+        gbTasks.Visible = false;
+
+
+        //Hide tbNewTask
+        gbNewTask.Visible = false;
+      }
+
+
+    }
+
+    private void rbShowPreviouslyCollectedWords_CheckedChanged(object sender, EventArgs e)
+    {
+      if (dgvProjects.SelectedRows.Count == 1 && rbShowPreviouslyCollectedWords.Checked)
+      {
+
+        //Show gbTasks
+        gbTasks.Visible = true;
+
+        //Hide NewTask
+        gbNewTask.Visible = false;
+      }
+      else
+      {
+        //Hide dgvTasks
+        gbTasks.Visible = false;
+
+        //Hide NewTask
+        gbNewTask.Visible = false;
+      }
+    }
+
+    private void btnStartCollectingWords_Click(object sender, EventArgs e)
+    {
+      dgv1.Rows.Clear();
+      dgv2.Rows.Clear();
+      dgvFoundWords.Rows.Clear();
+
+      lblTimeElapsed.Text = "";
+      dgv1.Refresh();
+      dgv2.Refresh();
+      dgvFoundWords.Refresh();
+      Refresh();
+
+
+
+      StartCollectingWordsFromFiles();
+
+      lblMsg.Text = "Finished";
+
+
+
+      ShowAll();
+    }
+
+    private void gbNewTask_VisibleChanged(object sender, EventArgs e)
+    {
+      if (gbNewTask.Visible)
+      {
+        tbNewTaskNumber.Focus();
+      }
+    }
+
+    private void dgvTasks_SelectionChanged(object sender, EventArgs e)
+    {
+      if (dgvTasks.SelectedRows.Count == 1)
+      {
+        btnShowWords.Enabled = true;
+      }
+      else
+      {
+        btnShowWords.Enabled = false;
+      }
+    }
+
+    private void tbNewTaskNumber_TextChanged(object sender, EventArgs e)
+    {
+      if (tbNewTaskNumber.TextLength == 0)
+      {
+        btnDefineFolders.Enabled = false;
+
+      }
+      else
+      {
+        if (tbNewTaskNumber.TextLength == 4 && !tbNewTaskNumber.Text.Contains("+") && !tbNewTaskNumber.Text.Contains("-"))
+        {
+          int TaskNumber = 0;
+          if (int.TryParse(tbNewTaskNumber.Text, out TaskNumber))
+          {
+            
+              if (qta.TaskExists(TaskNumber) == 0)
+              {
+                btnDefineFolders.Enabled = true;
+                lblFolderToCollectWords.Text = "";
+              }
+              else
+              {
+                btnDefineFolders.Enabled = false;
+                lblFolderToCollectWords.Text = "Words from this Task already collected";
+              }
+            
+             
+          }
+        }
+        else
+        {
+          btnDefineFolders.Enabled = false;
+          lblFolderToCollectWords.Text = "Task number must be 4 numbers long";
+        }
+      }
     }
   }
 }

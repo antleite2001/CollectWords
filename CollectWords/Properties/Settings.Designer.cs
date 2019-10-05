@@ -25,18 +25,6 @@ namespace CollectWords.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("c")]
-        public string FileTypes {
-            get {
-                return ((string)(this["FileTypes"]));
-            }
-            set {
-                this["FileTypes"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("c:\\")]
         public string TargetFolder {
             get {

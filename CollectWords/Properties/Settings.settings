@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="CollectWords.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="FileTypes" Type="System.String" Scope="User">
-      <Value Profile="(Default)">c</Value>
-    </Setting>
     <Setting Name="TargetFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)">c:\</Value>
     </Setting>

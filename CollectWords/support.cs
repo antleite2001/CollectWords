@@ -3,11 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Windows.Forms;
 namespace CollectWords
 {
   internal class support
   {
+
+     
+
+    
+
+
+
     public void removecomment(int j, ref string line, ref bool isinmultilinecomment)
     {
       if (!string.IsNullOrEmpty(line))

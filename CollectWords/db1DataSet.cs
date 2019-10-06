@@ -7,9 +7,12 @@
   }
 }
 
-namespace CollectWords.db1DataSetTableAdapters {
-    
-    
-    public partial class TAProjects {
+namespace CollectWords.db1DataSetTableAdapters
+{
+  partial class TAR_TaskFile
+  {
+  }
+
+  public partial class TAProjects {
     }
 }

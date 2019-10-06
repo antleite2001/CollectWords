@@ -38,12 +38,12 @@
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
       System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
-      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
       this.btnExit = new System.Windows.Forms.Button();
       this.btnStartCollectingWords = new System.Windows.Forms.Button();
       this.dgv1 = new System.Windows.Forms.DataGridView();
@@ -53,6 +53,7 @@
       this.dgv2 = new System.Windows.Forms.DataGridView();
       this.FileContent = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.dgvFoundWords = new System.Windows.Forms.DataGridView();
+      this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.lblMsg = new System.Windows.Forms.Label();
       this.btnDefineFolders = new System.Windows.Forms.Button();
       this.tbFilter = new System.Windows.Forms.TextBox();
@@ -83,7 +84,6 @@
       this.gbNewTask = new System.Windows.Forms.GroupBox();
       this.lblFolderToCollectWords = new System.Windows.Forms.Label();
       this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-      this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
       ((System.ComponentModel.ISupportInitialize)(this.dgv1)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dgv2)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dgvFoundWords)).BeginInit();
@@ -115,7 +115,7 @@
       // 
       this.btnStartCollectingWords.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
       this.btnStartCollectingWords.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.btnStartCollectingWords.Location = new System.Drawing.Point(6, 111);
+      this.btnStartCollectingWords.Location = new System.Drawing.Point(6, 121);
       this.btnStartCollectingWords.Name = "btnStartCollectingWords";
       this.btnStartCollectingWords.Size = new System.Drawing.Size(307, 34);
       this.btnStartCollectingWords.TabIndex = 1;
@@ -279,6 +279,17 @@
       this.dgvFoundWords.TabIndex = 13;
       this.dgvFoundWords.SelectionChanged += new System.EventHandler(this.dgvFoundWords_SelectionChanged);
       // 
+      // dataGridViewTextBoxColumn1
+      // 
+      this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+      dataGridViewCellStyle9.BackColor = System.Drawing.Color.White;
+      dataGridViewCellStyle9.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle9;
+      this.dataGridViewTextBoxColumn1.HeaderText = "Found Words";
+      this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+      this.dataGridViewTextBoxColumn1.ReadOnly = true;
+      this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+      // 
       // lblMsg
       // 
       this.lblMsg.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -296,7 +307,7 @@
       this.btnDefineFolders.Font = new System.Drawing.Font("Consolas", 8.25F);
       this.btnDefineFolders.Location = new System.Drawing.Point(6, 45);
       this.btnDefineFolders.Name = "btnDefineFolders";
-      this.btnDefineFolders.Size = new System.Drawing.Size(307, 25);
+      this.btnDefineFolders.Size = new System.Drawing.Size(307, 34);
       this.btnDefineFolders.TabIndex = 19;
       this.btnDefineFolders.Text = "Define Folder to Collect Words";
       this.btnDefineFolders.UseVisualStyleBackColor = true;
@@ -614,22 +625,11 @@
       // lblFolderToCollectWords
       // 
       this.lblFolderToCollectWords.AutoSize = true;
-      this.lblFolderToCollectWords.Location = new System.Drawing.Point(6, 73);
+      this.lblFolderToCollectWords.Location = new System.Drawing.Point(6, 83);
       this.lblFolderToCollectWords.Name = "lblFolderToCollectWords";
       this.lblFolderToCollectWords.Size = new System.Drawing.Size(127, 13);
       this.lblFolderToCollectWords.TabIndex = 36;
       this.lblFolderToCollectWords.Text = "FolderToCollectWords";
-      // 
-      // dataGridViewTextBoxColumn1
-      // 
-      this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-      dataGridViewCellStyle9.BackColor = System.Drawing.Color.White;
-      dataGridViewCellStyle9.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      this.dataGridViewTextBoxColumn1.DefaultCellStyle = dataGridViewCellStyle9;
-      this.dataGridViewTextBoxColumn1.HeaderText = "Found Words";
-      this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-      this.dataGridViewTextBoxColumn1.ReadOnly = true;
-      this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.False;
       // 
       // Form1
       // 

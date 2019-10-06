@@ -21,16 +21,20 @@ namespace CollectWords
     QueriesTableAdapter qta = new QueriesTableAdapter();
 
     //To Collect words from/to db
-    private TAWords wordsTA = new TAWords();
-    private db1DataSet.WordsDataTable wordsDT = new db1DataSet.WordsDataTable();
+    private TAWords taWords = new TAWords();
+    private db1DataSet.WordsDataTable dtWords = new db1DataSet.WordsDataTable();
 
     //To Collect files from/to db
-    private TAFiles filesTA = new TAFiles();
-    private db1DataSet.FilesDataTable filesDT = new db1DataSet.FilesDataTable();
+    private TAFiles taFiles = new TAFiles();
+    private db1DataSet.FilesDataTable dtfiles = new db1DataSet.FilesDataTable();
 
     //To collect lines from/to db
-    private TALines linesTA = new TALines();
-    private db1DataSet.LinesDataTable linesDT = new db1DataSet.LinesDataTable();
+    private TALines taLines = new TALines();
+    private db1DataSet.LinesDataTable dtLines = new db1DataSet.LinesDataTable();
+
+    private TAR_ProjectTask taR_projectTask = new TAR_ProjectTask();
+    private db1DataSet.R_ProjectTaskDataTable dtR_projectTask = new db1DataSet.R_ProjectTaskDataTable();
+
 
     //To collect tasks from/to db
     //private TATasks tasksTA = new TATasks(); use tasksTableAdapter from form1
@@ -277,27 +281,27 @@ namespace CollectWords
     //returns IDFile
     private int getORinsertIdFile(string file)
     {
-      filesTA.FillByFile(filesDT, file);
-      if (filesDT.Rows.Count == 0) //File doesn't in db. Insert
+      taFiles.FillByFile(dtfiles, file);
+      if (dtfiles.Rows.Count == 0) //File doesn't in db. Insert
       {
-        filesTA.Insert(file);
+        taFiles.Insert(file);
       }
       //Get new fileid
-      filesTA.FillByFile(filesDT, file);
-      return filesDT[0].IdFile;
+      taFiles.FillByFile(dtfiles, file);
+      return dtfiles[0].IdFile;
     }
 
 
     private int getOrInsertIdWord(string word)
     {
-      wordsTA.FillByWord(wordsDT, word);
-      if (wordsDT.Rows.Count == 0) //File doesn't in db. Insert
+      taWords.FillByWord(dtWords, word);
+      if (dtWords.Rows.Count == 0) //File doesn't in db. Insert
       {
-        wordsTA.Insert(word);
+        taWords.Insert(word);
       }
       //Get new IdWord
-      wordsTA.FillByWord(wordsDT, word);
-      return wordsDT[0].IdWord;
+      taWords.FillByWord(dtWords, word);
+      return dtWords[0].IdWord;
     }
 
 
@@ -383,7 +387,7 @@ namespace CollectWords
                 !excludestartwith.Any(w => word.StartsWith(w)))
               {
                 IdWord = getOrInsertIdWord(word);
-                linesTA.Insert(IdWord, IdFile, linecount);
+                taLines.Insert(IdWord, IdFile, linecount);
                 //InsertWordIntoList(word, file, linecount);
                 lblMsg.Text = word;
                 lblMsg.Refresh();
@@ -787,16 +791,39 @@ namespace CollectWords
       dgv2.Refresh();
       dgvFoundWords.Refresh();
       Refresh();
+      int IdTask=0;
+      Int32 IdProject = 0;
+      if (int.TryParse(tbNewTaskNumber.Text, out int TaskNumber))
+      {
 
+        //Insert TaskNumber Into db Tasks
+        tasksTableAdapter.Insert(TaskNumber);
+        //RecoverIdTask from new Task Number
+        tasksTableAdapter.FillByTaskNumber(db1DataSet.Tasks, TaskNumber);
+        if(db1DataSet.Tasks.Rows.Count==1)
+        {
+          IdTask = db1DataSet.Tasks[0].IdTask;
+        }
 
+        //Insert data into r_ProjectTask         
+        IdProject = Convert.ToInt32(dgvProjects.SelectedRows[0].Cells[1].Value);
+        taR_projectTask.Insert(IdProject, IdTask);
 
-      StartCollectingWordsFromFiles();
+        StartCollectingWordsFromFiles();
 
       lblMsg.Text = "Finished";
 
 
 
       ShowAll();
+          }
+      else
+      {
+        lblFolderToCollectWords.Text = "Error 587548";
+      }
+
+
+      
     }
 
     private void gbNewTask_VisibleChanged(object sender, EventArgs e)
@@ -833,16 +860,25 @@ namespace CollectWords
 
           if (int.TryParse(tbNewTaskNumber.Text, out int TaskNumber))
           {
-
-            if (qta.TaskExists(TaskNumber) == 0)
+            int? x = (int?)qta.TaskExists(TaskNumber);
+            if (  x.HasValue && x  == 1)
             {
-              btnDefineFolders.Enabled = true;
-              lblFolderToCollectWords.Text = "";
+              btnDefineFolders.Enabled = false;
+              tAProjects.FillProjectByTaskNumber(db1DataSet.Projects, TaskNumber);
+              if (db1DataSet.Projects.Rows.Count == 1)
+              {
+                lblFolderToCollectWords.Text = $"Words from task {TaskNumber} already collected from\nProject {db1DataSet.Projects[0].Project}";
+              }
+              else
+              {
+                lblFolderToCollectWords.Text = "Error 251425";
+              }
+              
             }
             else
             {
-              btnDefineFolders.Enabled = false;
-              lblFolderToCollectWords.Text = "Words from this Task already collected";
+              btnDefineFolders.Enabled = true;
+              lblFolderToCollectWords.Text = "";
             }
 
 

@@ -24,9 +24,15 @@ namespace CollectWords
     private TAWords taWords = new TAWords();
     private db1DataSet.WordsDataTable dtWords = new db1DataSet.WordsDataTable();
 
+    private TAWords1 taWords1 = new TAWords1();
+    private db1DataSet.Words1DataTable dtWords1 = new db1DataSet.Words1DataTable();
+
     //To Collect files from/to db
     private TAFiles taFiles = new TAFiles();
     private db1DataSet.FilesDataTable dtfiles = new db1DataSet.FilesDataTable();
+
+    private TAFiles1 taFiles1 = new TAFiles1();
+    private db1DataSet.Files1DataTable  dtFiles1 = new db1DataSet.Files1DataTable();
 
     //To collect lines from/to db
     private TALines taLines = new TALines();
@@ -34,6 +40,16 @@ namespace CollectWords
 
     private TAR_ProjectTask taR_projectTask = new TAR_ProjectTask();
     private db1DataSet.R_ProjectTaskDataTable dtR_projectTask = new db1DataSet.R_ProjectTaskDataTable();
+
+
+    //To fill Project by Task Number
+    private TAProjects1 taProjects1 = new TAProjects1();
+    private db1DataSet.Projects1DataTable dtProjects1 = new db1DataSet.Projects1DataTable();
+
+    //To fill Project by Task Number
+    private TATasks1 taTasks1 = new TATasks1();
+    private db1DataSet.Tasks1DataTable dtTasks1 = new db1DataSet.Tasks1DataTable();
+
 
 
     //To collect tasks from/to db
@@ -87,6 +103,7 @@ namespace CollectWords
       dgvFoundWords.SelectionChanged -= new System.EventHandler(dgvFoundWords_SelectionChanged);
 
       dgvFoundWords.Rows.Clear();
+      //TODO musb be changed
       foreach (Tuple<string, List<Tuple<string, List<int>>>> w in wordsOccurence)
       {
         dgvFoundWords.Rows.Add(w.Item1);
@@ -281,40 +298,43 @@ namespace CollectWords
     //returns IDFile
     private int getORinsertIdFile(string file)
     {
-      taFiles.FillByFile(dtfiles, file);
+      taFiles1.FillByFileName(dtFiles1, file);
       if (dtfiles.Rows.Count == 0) //File doesn't in db. Insert
       {
         taFiles.Insert(file);
+        taFiles.Update(dtfiles);
       }
       //Get new fileid
-      taFiles.FillByFile(dtfiles, file);
+      taFiles1.FillByFileName(dtFiles1, file);
       return dtfiles[0].IdFile;
     }
 
 
     private int getOrInsertIdWord(string word)
     {
-      taWords.FillByWord(dtWords, word);
+      taWords1.FillByWord(dtWords1, word);
       if (dtWords.Rows.Count == 0) //File doesn't in db. Insert
       {
         taWords.Insert(word);
+        taWords.Update(dtWords);
       }
       //Get new IdWord
-      taWords.FillByWord(dtWords, word);
+      taWords1.FillByWord(dtWords1, word);
       return dtWords[0].IdWord;
     }
 
 
     private int getIdTask(int TaskNumber, bool InsertIfMissing)
     {
-      tasksTableAdapter.FillByTaskNumber(db1DataSet.Tasks, TaskNumber);
+      taTasks1.FillByTaskNumber(db1DataSet.Tasks1, TaskNumber);
       if (db1DataSet.Tasks.Rows.Count == 0) //File doesn't in db. Insert
       {
         if (InsertIfMissing)
         {
           tasksTableAdapter.Insert(TaskNumber);
+          tasksTableAdapter.Update(db1DataSet.Tasks);
           //Get new IdTask
-          tasksTableAdapter.FillByTaskNumber(db1DataSet.Tasks , TaskNumber);
+          taTasks1.FillByTaskNumber(db1DataSet.Tasks1 , TaskNumber);
           return db1DataSet.Tasks[0].IdTask;
         }
         else
@@ -388,6 +408,7 @@ namespace CollectWords
               {
                 IdWord = getOrInsertIdWord(word);
                 taLines.Insert(IdWord, IdFile, linecount);
+                taLines.Update(dtLines);
                 //InsertWordIntoList(word, file, linecount);
                 lblMsg.Text = word;
                 lblMsg.Refresh();
@@ -726,7 +747,7 @@ namespace CollectWords
       if (dgvProjects.SelectedRows.Count == 1)
       {
         int IdProject = Convert.ToInt32(dgvProjects.SelectedRows[0].Cells[1].Value);
-        tasksTableAdapter.FillTasksByProjectId(db1DataSet.Tasks, IdProject);
+        taTasks1.FillTasksByProjectId(db1DataSet.Tasks1, IdProject);
         dgvTasks.ClearSelection();
 
         gbSelectAction.Text = $"Select Action Related to Project {dgvProjects.SelectedRows[0].Cells[0].Value.ToString()}";
@@ -798,18 +819,20 @@ namespace CollectWords
 
         //Insert TaskNumber Into db Tasks
         tasksTableAdapter.Insert(TaskNumber);
-        //RecoverIdTask from new Task Number
-        tasksTableAdapter.FillByTaskNumber(db1DataSet.Tasks, TaskNumber);
-        if(db1DataSet.Tasks.Rows.Count==1)
-        {
-          IdTask = db1DataSet.Tasks[0].IdTask;
-        }
+        tasksTableAdapter.Update(db1DataSet.Tasks);
 
+        //RecoverIdTask from new Task Number
+        taTasks1.FillByTaskNumber(db1DataSet.Tasks1, TaskNumber);
+        if(db1DataSet.Tasks1.Rows.Count==1)
+        {
+          IdTask = db1DataSet.Tasks1[0].IdTask;
+        }
+        tasksTableAdapter.Update(db1DataSet.Tasks);
         //Insert data into r_ProjectTask         
         IdProject = Convert.ToInt32(dgvProjects.SelectedRows[0].Cells[1].Value);
         taR_projectTask.Insert(IdProject, IdTask);
-
-        StartCollectingWordsFromFiles();
+        taR_projectTask.Update(dtR_projectTask);
+        //TODO remove comment StartCollectingWordsFromFiles();
 
       lblMsg.Text = "Finished";
 
@@ -864,8 +887,8 @@ namespace CollectWords
             if (  x.HasValue && x  == 1)
             {
               btnDefineFolders.Enabled = false;
-              tAProjects.FillProjectByTaskNumber(db1DataSet.Projects, TaskNumber);
-              if (db1DataSet.Projects.Rows.Count == 1)
+              taProjects1.FillProjectByTaskNumber(db1DataSet.Projects1, TaskNumber);
+              if (db1DataSet.Projects1.Rows.Count == 1)
               {
                 lblFolderToCollectWords.Text = $"Words from task {TaskNumber} already collected from\nProject {db1DataSet.Projects[0].Project}";
               }

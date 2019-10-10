@@ -4,6 +4,9 @@
 
   partial class db1DataSet
   {
+    partial class FilesDataTable
+    {
+    }
   }
 }
 

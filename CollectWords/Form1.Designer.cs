@@ -372,13 +372,13 @@
       dataGridViewCellStyle13.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
       this.dgvFoundFiles.DefaultCellStyle = dataGridViewCellStyle13;
       this.dgvFoundFiles.EnableHeadersVisualStyles = false;
-      this.dgvFoundFiles.Location = new System.Drawing.Point(12, 514);
+      this.dgvFoundFiles.Location = new System.Drawing.Point(12, 384);
       this.dgvFoundFiles.MultiSelect = false;
       this.dgvFoundFiles.Name = "dgvFoundFiles";
       this.dgvFoundFiles.ReadOnly = true;
       this.dgvFoundFiles.RowHeadersVisible = false;
       this.dgvFoundFiles.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-      this.dgvFoundFiles.Size = new System.Drawing.Size(323, 90);
+      this.dgvFoundFiles.Size = new System.Drawing.Size(319, 220);
       this.dgvFoundFiles.TabIndex = 27;
       // 
       // FoundFiles

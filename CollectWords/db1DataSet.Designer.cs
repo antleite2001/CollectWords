@@ -62,6 +62,10 @@ namespace CollectWords {
         
         private global::System.Data.DataRelation relationFK2_R_TaskFile_Files1;
         
+        private global::System.Data.DataRelation relationFiles_Lines;
+        
+        private global::System.Data.DataRelation relationWords_Lines;
+        
         private global::System.Data.SchemaSerializationMode _schemaSerializationMode = global::System.Data.SchemaSerializationMode.IncludeSchema;
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -458,6 +462,8 @@ namespace CollectWords {
             this.relationFK_R_ProjectTask_Tasks1 = this.Relations["FK_R_ProjectTask_Tasks1"];
             this.relationFK2_R_TaskFile_Tasks1 = this.Relations["FK2_R_TaskFile_Tasks1"];
             this.relationFK2_R_TaskFile_Files1 = this.Relations["FK2_R_TaskFile_Files1"];
+            this.relationFiles_Lines = this.Relations["Files_Lines"];
+            this.relationWords_Lines = this.Relations["Words_Lines"];
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -522,6 +528,14 @@ namespace CollectWords {
                         this.tableFiles1.IdFileColumn}, new global::System.Data.DataColumn[] {
                         this.tableR_TaskFile.IdFileColumn}, false);
             this.Relations.Add(this.relationFK2_R_TaskFile_Files1);
+            this.relationFiles_Lines = new global::System.Data.DataRelation("Files_Lines", new global::System.Data.DataColumn[] {
+                        this.tableFiles.IdFileColumn}, new global::System.Data.DataColumn[] {
+                        this.tableLines.IdFileColumn}, false);
+            this.Relations.Add(this.relationFiles_Lines);
+            this.relationWords_Lines = new global::System.Data.DataRelation("Words_Lines", new global::System.Data.DataColumn[] {
+                        this.tableWords.IdWordColumn}, new global::System.Data.DataColumn[] {
+                        this.tableLines.IdWordColumn}, false);
+            this.Relations.Add(this.relationWords_Lines);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1629,13 +1643,19 @@ namespace CollectWords {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public LinesRow AddLinesRow(int IdWord, int IdFile, int Line) {
+            public LinesRow AddLinesRow(WordsRow parentWordsRowByWords_Lines, FilesRow parentFilesRowByFiles_Lines, int Line) {
                 LinesRow rowLinesRow = ((LinesRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         null,
-                        IdWord,
-                        IdFile,
+                        null,
+                        null,
                         Line};
+                if ((parentWordsRowByWords_Lines != null)) {
+                    columnValuesArray[1] = parentWordsRowByWords_Lines[0];
+                }
+                if ((parentFilesRowByFiles_Lines != null)) {
+                    columnValuesArray[2] = parentFilesRowByFiles_Lines[0];
+                }
                 rowLinesRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowLinesRow);
                 return rowLinesRow;
@@ -3886,6 +3906,17 @@ namespace CollectWords {
                     this[this.tableWords.WordColumn] = value;
                 }
             }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public LinesRow[] GetLinesRows() {
+                if ((this.Table.ChildRelations["Words_Lines"] == null)) {
+                    return new LinesRow[0];
+                }
+                else {
+                    return ((LinesRow[])(base.GetChildRows(this.Table.ChildRelations["Words_Lines"])));
+                }
+            }
         }
         
         /// <summary>
@@ -3932,6 +3963,17 @@ namespace CollectWords {
                 }
                 else {
                     return ((R_TaskFileRow[])(base.GetChildRows(this.Table.ChildRelations["FK2_R_TaskFile_Files"])));
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public LinesRow[] GetLinesRows() {
+                if ((this.Table.ChildRelations["Files_Lines"] == null)) {
+                    return new LinesRow[0];
+                }
+                else {
+                    return ((LinesRow[])(base.GetChildRows(this.Table.ChildRelations["Files_Lines"])));
                 }
             }
         }
@@ -3991,6 +4033,28 @@ namespace CollectWords {
                 }
                 set {
                     this[this.tableLines.LineColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public FilesRow FilesRow {
+                get {
+                    return ((FilesRow)(this.GetParentRow(this.Table.ParentRelations["Files_Lines"])));
+                }
+                set {
+                    this.SetParentRow(value, this.Table.ParentRelations["Files_Lines"]);
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public WordsRow WordsRow {
+                get {
+                    return ((WordsRow)(this.GetParentRow(this.Table.ParentRelations["Words_Lines"])));
+                }
+                set {
+                    this.SetParentRow(value, this.Table.ParentRelations["Words_Lines"]);
                 }
             }
         }
@@ -8038,13 +8102,25 @@ SELECT IdTaskFile, IdTask, IdFile FROM R_TaskFile WHERE (IdTaskFile = @IdTaskFil
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         private void InitCommandCollection() {
-            this._commandCollection = new global::System.Data.IDbCommand[1];
+            this._commandCollection = new global::System.Data.IDbCommand[3];
             this._commandCollection[0] = new global::System.Data.SqlClient.SqlCommand();
             ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[0])).Connection = new global::System.Data.SqlClient.SqlConnection(global::CollectWords.Properties.Settings.Default.db1ConnectionString);
-            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[0])).CommandText = "SELECT     COUNT(Task) AS Expr1\r\nFROM         Tasks\r\nWHERE     (Task = @TaskNumbe" +
-                "r)";
+            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[0])).CommandText = "SELECT     COUNT(Task) AS TaskExists\r\nFROM         Tasks\r\nWHERE     (Task = @Task" +
+                "Number)";
             ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[0])).CommandType = global::System.Data.CommandType.Text;
             ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[0])).Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@TaskNumber", global::System.Data.SqlDbType.Int, 4, global::System.Data.ParameterDirection.Input, 0, 0, "Task", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
+            this._commandCollection[1] = new global::System.Data.SqlClient.SqlCommand();
+            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[1])).Connection = new global::System.Data.SqlClient.SqlConnection(global::CollectWords.Properties.Settings.Default.db1ConnectionString);
+            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[1])).CommandText = "SELECT     COUNT(Word) AS WordExists\r\nFROM         Words\r\nWHERE     (Word = @Word" +
+                ")";
+            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[1])).CommandType = global::System.Data.CommandType.Text;
+            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[1])).Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Word", global::System.Data.SqlDbType.VarChar, 500, global::System.Data.ParameterDirection.Input, 0, 0, "Word", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
+            this._commandCollection[2] = new global::System.Data.SqlClient.SqlCommand();
+            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[2])).Connection = new global::System.Data.SqlClient.SqlConnection(global::CollectWords.Properties.Settings.Default.db1ConnectionString);
+            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[2])).CommandText = "SELECT     COUNT([File]) AS FileExists\r\nFROM         Files\r\nWHERE     ([File] = @" +
+                "File)";
+            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[2])).CommandType = global::System.Data.CommandType.Text;
+            ((global::System.Data.SqlClient.SqlCommand)(this._commandCollection[2])).Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@File", global::System.Data.SqlDbType.VarChar, 500, global::System.Data.ParameterDirection.Input, 0, 0, "File", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -8073,6 +8149,74 @@ SELECT IdTaskFile, IdTask, IdFile FROM R_TaskFile WHERE (IdTaskFile = @IdTaskFil
             }
             else {
                 return ((object)(returnValue));
+            }
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+        [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
+        public virtual object WordExists(string Word) {
+            global::System.Data.SqlClient.SqlCommand command = ((global::System.Data.SqlClient.SqlCommand)(this.CommandCollection[1]));
+            if ((Word == null)) {
+                throw new global::System.ArgumentNullException("Word");
+            }
+            else {
+                command.Parameters[0].Value = ((string)(Word));
+            }
+            global::System.Data.ConnectionState previousConnectionState = command.Connection.State;
+            if (((command.Connection.State & global::System.Data.ConnectionState.Open) 
+                        != global::System.Data.ConnectionState.Open)) {
+                command.Connection.Open();
+            }
+            object returnValue;
+            try {
+                returnValue = command.ExecuteScalar();
+            }
+            finally {
+                if ((previousConnectionState == global::System.Data.ConnectionState.Closed)) {
+                    command.Connection.Close();
+                }
+            }
+            if (((returnValue == null) 
+                        || (returnValue.GetType() == typeof(global::System.DBNull)))) {
+                return null;
+            }
+            else {
+                return ((object)(returnValue));
+            }
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+        [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
+        public virtual global::System.Nullable<int> FileExists(string File) {
+            global::System.Data.SqlClient.SqlCommand command = ((global::System.Data.SqlClient.SqlCommand)(this.CommandCollection[2]));
+            if ((File == null)) {
+                throw new global::System.ArgumentNullException("File");
+            }
+            else {
+                command.Parameters[0].Value = ((string)(File));
+            }
+            global::System.Data.ConnectionState previousConnectionState = command.Connection.State;
+            if (((command.Connection.State & global::System.Data.ConnectionState.Open) 
+                        != global::System.Data.ConnectionState.Open)) {
+                command.Connection.Open();
+            }
+            object returnValue;
+            try {
+                returnValue = command.ExecuteScalar();
+            }
+            finally {
+                if ((previousConnectionState == global::System.Data.ConnectionState.Closed)) {
+                    command.Connection.Close();
+                }
+            }
+            if (((returnValue == null) 
+                        || (returnValue.GetType() == typeof(global::System.DBNull)))) {
+                return new global::System.Nullable<int>();
+            }
+            else {
+                return new global::System.Nullable<int>(((int)(returnValue)));
             }
         }
     }
@@ -8386,6 +8530,15 @@ SELECT IdTaskFile, IdTask, IdFile FROM R_TaskFile WHERE (IdTaskFile = @IdTaskFil
                     allChangedRows.AddRange(updatedRows);
                 }
             }
+            if ((this._tAWords != null)) {
+                global::System.Data.DataRow[] updatedRows = dataSet.Words.Select(null, null, global::System.Data.DataViewRowState.ModifiedCurrent);
+                updatedRows = this.GetRealUpdatedRows(updatedRows, allAddedRows);
+                if (((updatedRows != null) 
+                            && (0 < updatedRows.Length))) {
+                    result = (result + this._tAWords.Update(updatedRows));
+                    allChangedRows.AddRange(updatedRows);
+                }
+            }
             if ((this._tAFiles != null)) {
                 global::System.Data.DataRow[] updatedRows = dataSet.Files.Select(null, null, global::System.Data.DataViewRowState.ModifiedCurrent);
                 updatedRows = this.GetRealUpdatedRows(updatedRows, allAddedRows);
@@ -8419,15 +8572,6 @@ SELECT IdTaskFile, IdTask, IdFile FROM R_TaskFile WHERE (IdTaskFile = @IdTaskFil
                 if (((updatedRows != null) 
                             && (0 < updatedRows.Length))) {
                     result = (result + this._tAFiles1.Update(updatedRows));
-                    allChangedRows.AddRange(updatedRows);
-                }
-            }
-            if ((this._tAWords != null)) {
-                global::System.Data.DataRow[] updatedRows = dataSet.Words.Select(null, null, global::System.Data.DataViewRowState.ModifiedCurrent);
-                updatedRows = this.GetRealUpdatedRows(updatedRows, allAddedRows);
-                if (((updatedRows != null) 
-                            && (0 < updatedRows.Length))) {
-                    result = (result + this._tAWords.Update(updatedRows));
                     allChangedRows.AddRange(updatedRows);
                 }
             }
@@ -8485,6 +8629,14 @@ SELECT IdTaskFile, IdTask, IdFile FROM R_TaskFile WHERE (IdTaskFile = @IdTaskFil
                     allAddedRows.AddRange(addedRows);
                 }
             }
+            if ((this._tAWords != null)) {
+                global::System.Data.DataRow[] addedRows = dataSet.Words.Select(null, null, global::System.Data.DataViewRowState.Added);
+                if (((addedRows != null) 
+                            && (0 < addedRows.Length))) {
+                    result = (result + this._tAWords.Update(addedRows));
+                    allAddedRows.AddRange(addedRows);
+                }
+            }
             if ((this._tAFiles != null)) {
                 global::System.Data.DataRow[] addedRows = dataSet.Files.Select(null, null, global::System.Data.DataViewRowState.Added);
                 if (((addedRows != null) 
@@ -8514,14 +8666,6 @@ SELECT IdTaskFile, IdTask, IdFile FROM R_TaskFile WHERE (IdTaskFile = @IdTaskFil
                 if (((addedRows != null) 
                             && (0 < addedRows.Length))) {
                     result = (result + this._tAFiles1.Update(addedRows));
-                    allAddedRows.AddRange(addedRows);
-                }
-            }
-            if ((this._tAWords != null)) {
-                global::System.Data.DataRow[] addedRows = dataSet.Words.Select(null, null, global::System.Data.DataViewRowState.Added);
-                if (((addedRows != null) 
-                            && (0 < addedRows.Length))) {
-                    result = (result + this._tAWords.Update(addedRows));
                     allAddedRows.AddRange(addedRows);
                 }
             }
@@ -8599,14 +8743,6 @@ SELECT IdTaskFile, IdTask, IdFile FROM R_TaskFile WHERE (IdTaskFile = @IdTaskFil
                     allChangedRows.AddRange(deletedRows);
                 }
             }
-            if ((this._tAWords != null)) {
-                global::System.Data.DataRow[] deletedRows = dataSet.Words.Select(null, null, global::System.Data.DataViewRowState.Deleted);
-                if (((deletedRows != null) 
-                            && (0 < deletedRows.Length))) {
-                    result = (result + this._tAWords.Update(deletedRows));
-                    allChangedRows.AddRange(deletedRows);
-                }
-            }
             if ((this._tAFiles1 != null)) {
                 global::System.Data.DataRow[] deletedRows = dataSet.Files1.Select(null, null, global::System.Data.DataViewRowState.Deleted);
                 if (((deletedRows != null) 
@@ -8636,6 +8772,14 @@ SELECT IdTaskFile, IdTask, IdFile FROM R_TaskFile WHERE (IdTaskFile = @IdTaskFil
                 if (((deletedRows != null) 
                             && (0 < deletedRows.Length))) {
                     result = (result + this._tAFiles.Update(deletedRows));
+                    allChangedRows.AddRange(deletedRows);
+                }
+            }
+            if ((this._tAWords != null)) {
+                global::System.Data.DataRow[] deletedRows = dataSet.Words.Select(null, null, global::System.Data.DataViewRowState.Deleted);
+                if (((deletedRows != null) 
+                            && (0 < deletedRows.Length))) {
+                    result = (result + this._tAWords.Update(deletedRows));
                     allChangedRows.AddRange(deletedRows);
                 }
             }

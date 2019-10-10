@@ -18,7 +18,7 @@ namespace CollectWords
   public partial class Form1 : Form
   {
     private Stopwatch sw = new Stopwatch();
-    QueriesTableAdapter qta = new QueriesTableAdapter();
+    private QueriesTableAdapter qta = new QueriesTableAdapter();
 
     //To Collect words from/to db
     private TAWords taWords = new TAWords();
@@ -32,7 +32,7 @@ namespace CollectWords
     private db1DataSet.FilesDataTable dtfiles = new db1DataSet.FilesDataTable();
 
     private TAFiles1 taFiles1 = new TAFiles1();
-    private db1DataSet.Files1DataTable  dtFiles1 = new db1DataSet.Files1DataTable();
+    private db1DataSet.Files1DataTable dtFiles1 = new db1DataSet.Files1DataTable();
 
     //To collect lines from/to db
     private TALines taLines = new TALines();
@@ -298,55 +298,48 @@ namespace CollectWords
     //returns IDFile
     private int getORinsertIdFile(string file)
     {
-      taFiles1.FillByFileName(dtFiles1, file);
-      if (dtfiles.Rows.Count == 0) //File doesn't in db. Insert
+      if (Convert.ToInt32(qta.FileExists(file)) == 0)
       {
         taFiles.Insert(file);
-        taFiles.Update(dtfiles);
+        //taFiles.Update(dtfiles);
       }
       //Get new fileid
       taFiles1.FillByFileName(dtFiles1, file);
-      return dtfiles[0].IdFile;
+      return dtFiles1[0].IdFile;
     }
-
 
     private int getOrInsertIdWord(string word)
     {
-      taWords1.FillByWord(dtWords1, word);
-      if (dtWords.Rows.Count == 0) //File doesn't in db. Insert
+      if (Convert.ToInt32(qta.WordExists(word)) == 0)
       {
+
         taWords.Insert(word);
-        taWords.Update(dtWords);
+        //taWords.Update(dtWords);
       }
       //Get new IdWord
       taWords1.FillByWord(dtWords1, word);
-      return dtWords[0].IdWord;
+      return dtWords1[0].IdWord;
+
     }
 
-
-    private int getIdTask(int TaskNumber, bool InsertIfMissing)
+    private int getOrInsertIdTask(int TaskNumber)
     {
-      taTasks1.FillByTaskNumber(db1DataSet.Tasks1, TaskNumber);
-      if (db1DataSet.Tasks.Rows.Count == 0) //File doesn't in db. Insert
+
+      if (Convert.ToInt32(qta.TaskExists(TaskNumber)) == 0)
       {
-        if (InsertIfMissing)
-        {
-          tasksTableAdapter.Insert(TaskNumber);
-          tasksTableAdapter.Update(db1DataSet.Tasks);
-          //Get new IdTask
-          taTasks1.FillByTaskNumber(db1DataSet.Tasks1 , TaskNumber);
-          return db1DataSet.Tasks[0].IdTask;
-        }
-        else
-        {
-          return -1;
-        }
+
+        tasksTableAdapter.Insert(TaskNumber);
+
       }
-
-      return db1DataSet.Tasks[0].IdTask;
-
-
+      //Get new IdTask
+      taTasks1.FillByTaskNumber(dtTasks1, TaskNumber);
+      return dtTasks1[0].IdTask;
     }
+
+
+
+
+
 
 
     private void StartCollectingWordsFromFiles()
@@ -358,7 +351,7 @@ namespace CollectWords
       string[] linessplited;
       string[] lines;
       string[] files;
-      int linecount = 0;
+      int Line = 0;
       string linetemp = "";
       int IdFile = 0; //Index from database
       int IdWord = 0;//Index from db
@@ -366,16 +359,17 @@ namespace CollectWords
       foreach (string fileType in fileTypes)
       {
 
-        FoundFiles.HeaderText = "Found files type (" + fileType + ")";
+        
 
         files = Directory.GetFiles(lblFolderToCollectWords.Text, "*." + fileType, SearchOption.AllDirectories);
+FoundFiles.HeaderText =  $"Found {files.Length} files of type ({ fileType })";
         foreach (string file in files)
         {
           dgvFoundFiles.Rows.Add(Path.GetFileName(file));
         }
 
         dgvFoundFiles.Refresh();
-
+        
         foreach (string file in files)
         {
           IdFile = getORinsertIdFile(file);
@@ -386,17 +380,18 @@ namespace CollectWords
             if (file.Contains(dgvFoundFiles.Rows[v].Cells[0].Value.ToString()))
             {
               dgvFoundFiles.Rows.RemoveAt(v);
+              FoundFiles.HeaderText = $"Found {dgvFoundFiles.Rows.Count} files of type ({ fileType })";
               break;
             }
           }
           dgvFoundFiles.Refresh();
 
           lines = File.ReadAllLines(file);
-          linecount = 0;
+          Line = 0;
           //Process line in file
           foreach (string line in lines)
           {
-            linecount++;
+            Line++;
             linetemp = line;
             removecomment(0, ref linetemp, ref isInMultiLineComment);
             linessplited = linetemp.Split(delimiters);
@@ -407,8 +402,8 @@ namespace CollectWords
                 !excludestartwith.Any(w => word.StartsWith(w)))
               {
                 IdWord = getOrInsertIdWord(word);
-                taLines.Insert(IdWord, IdFile, linecount);
-                taLines.Update(dtLines);
+                taLines.Insert(IdWord, IdFile, Line);
+                 
                 //InsertWordIntoList(word, file, linecount);
                 lblMsg.Text = word;
                 lblMsg.Refresh();
@@ -812,145 +807,138 @@ namespace CollectWords
       dgv2.Refresh();
       dgvFoundWords.Refresh();
       Refresh();
-      int IdTask=0;
-      Int32 IdProject = 0;
+      int IdTask = 0;
+      int IdProject = 0;
       if (int.TryParse(tbNewTaskNumber.Text, out int TaskNumber))
       {
 
-        //Insert TaskNumber Into db Tasks
-        tasksTableAdapter.Insert(TaskNumber);
-        tasksTableAdapter.Update(db1DataSet.Tasks);
 
-        //RecoverIdTask from new Task Number
-        taTasks1.FillByTaskNumber(db1DataSet.Tasks1, TaskNumber);
-        if(db1DataSet.Tasks1.Rows.Count==1)
-        {
-          IdTask = db1DataSet.Tasks1[0].IdTask;
-        }
-        tasksTableAdapter.Update(db1DataSet.Tasks);
+        IdTask = getOrInsertIdTask(TaskNumber);
+
         //Insert data into r_ProjectTask         
         IdProject = Convert.ToInt32(dgvProjects.SelectedRows[0].Cells[1].Value);
         taR_projectTask.Insert(IdProject, IdTask);
-        taR_projectTask.Update(dtR_projectTask);
-        //TODO remove comment StartCollectingWordsFromFiles();
+        
+        StartCollectingWordsFromFiles();
 
-      lblMsg.Text = "Finished";
+        lblMsg.Text = "Finished";
 
 
 
-      ShowAll();
-          }
+        ShowAll();
+      }
       else
       {
         lblFolderToCollectWords.Text = "Error 587548";
       }
-
-
-      
     }
 
-    private void gbNewTask_VisibleChanged(object sender, EventArgs e)
+
+
+  
+
+  private void gbNewTask_VisibleChanged(object sender, EventArgs e)
+  {
+    if (gbNewTask.Visible)
     {
-      if (gbNewTask.Visible)
-      {
-        tbNewTaskNumber.Focus();
-      }
+      tbNewTaskNumber.Focus();
     }
+  }
 
-    private void dgvTasks_SelectionChanged(object sender, EventArgs e)
+  private void dgvTasks_SelectionChanged(object sender, EventArgs e)
+  {
+    if (dgvTasks.SelectedRows.Count == 1)
     {
-      if (dgvTasks.SelectedRows.Count == 1)
-      {
-        btnShowWords.Enabled = true;
-      }
-      else
-      {
-        btnShowWords.Enabled = false;
-      }
+      btnShowWords.Enabled = true;
     }
-
-    private void tbNewTaskNumber_TextChanged(object sender, EventArgs e)
+    else
     {
-      if (tbNewTaskNumber.TextLength == 0)
-      {
-        btnDefineFolders.Enabled = false;
+      btnShowWords.Enabled = false;
+    }
+  }
 
-      }
-      else
+  private void tbNewTaskNumber_TextChanged(object sender, EventArgs e)
+  {
+    if (tbNewTaskNumber.TextLength == 0)
+    {
+      btnDefineFolders.Enabled = false;
+
+    }
+    else
+    {
+      if (tbNewTaskNumber.TextLength == 4 && !tbNewTaskNumber.Text.Contains("+") && !tbNewTaskNumber.Text.Contains("-"))
       {
-        if (tbNewTaskNumber.TextLength == 4 && !tbNewTaskNumber.Text.Contains("+") && !tbNewTaskNumber.Text.Contains("-"))
+
+        if (int.TryParse(tbNewTaskNumber.Text, out int TaskNumber))
         {
-
-          if (int.TryParse(tbNewTaskNumber.Text, out int TaskNumber))
+          int? x = (int?)qta.TaskExists(TaskNumber);
+          if (x.HasValue && x == 1)
           {
-            int? x = (int?)qta.TaskExists(TaskNumber);
-            if (  x.HasValue && x  == 1)
+            btnDefineFolders.Enabled = false;
+            taProjects1.FillProjectByTaskNumber(db1DataSet.Projects1, TaskNumber);
+            if (db1DataSet.Projects1.Rows.Count == 1)
             {
-              btnDefineFolders.Enabled = false;
-              taProjects1.FillProjectByTaskNumber(db1DataSet.Projects1, TaskNumber);
-              if (db1DataSet.Projects1.Rows.Count == 1)
-              {
-                lblFolderToCollectWords.Text = $"Words from task {TaskNumber} already collected from\nProject {db1DataSet.Projects[0].Project}";
-              }
-              else
-              {
-                lblFolderToCollectWords.Text = "Error 251425";
-              }
-              
+              lblFolderToCollectWords.Text = $"Words from task {TaskNumber} already collected from\nProject {db1DataSet.Projects[0].Project}";
             }
             else
             {
-              btnDefineFolders.Enabled = true;
-              lblFolderToCollectWords.Text = "";
+              lblFolderToCollectWords.Text = "Error 251425";
             }
 
-
-          }
-        }
-        else
-        {
-          btnDefineFolders.Enabled = false;
-          lblFolderToCollectWords.Text = "Task number must be 4 numbers long";
-        }
-      }
-    }
-    public void removecomment(int j, ref string line, ref bool isinmultilinecomment)
-    {
-      if (!string.IsNullOrEmpty(line))
-      {
-        int i;
-        int k;
-        if (isinmultilinecomment)
-        {
-          i = line.IndexOf(@"*/");
-          if (i >= 0)
-          {
-            isinmultilinecomment = false;
-            line = line.Remove(j, i - j + 2);
-            removecomment(i + 2, ref line, ref isinmultilinecomment);
           }
           else
           {
-            line = line.Remove(j);
+            btnDefineFolders.Enabled = true;
+            lblFolderToCollectWords.Text = "";
           }
-        }
-        else
-        {
-          i = line.IndexOf(@"/*");
-          if (i >= 0)
-          {
-            isinmultilinecomment = true;
-            removecomment(i, ref line, ref isinmultilinecomment);
-          }
-        }
 
-        //Remove single line comment
-        k = line.IndexOf(@"//");
-        if (k >= 0)
-        {
-          line = line.Remove(k);
+
         }
+      }
+      else
+      {
+        btnDefineFolders.Enabled = false;
+        lblFolderToCollectWords.Text = "Task number must be 4 numbers long";
       }
     }
   }
+  public void removecomment(int j, ref string line, ref bool isinmultilinecomment)
+  {
+    if (!string.IsNullOrEmpty(line))
+    {
+      int i;
+      int k;
+      if (isinmultilinecomment)
+      {
+        i = line.IndexOf(@"*/");
+        if (i >= 0)
+        {
+          isinmultilinecomment = false;
+          line = line.Remove(j, i - j + 2);
+          removecomment(i + 2, ref line, ref isinmultilinecomment);
+        }
+        else
+        {
+          line = line.Remove(j);
+        }
+      }
+      else
+      {
+        i = line.IndexOf(@"/*");
+        if (i >= 0)
+        {
+          isinmultilinecomment = true;
+          removecomment(i, ref line, ref isinmultilinecomment);
+        }
+      }
+
+      //Remove single line comment
+      k = line.IndexOf(@"//");
+      if (k >= 0)
+      {
+        line = line.Remove(k);
+      }
+    }
+  }
+}
 }

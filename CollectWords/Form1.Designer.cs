@@ -76,7 +76,7 @@
       this.idTaskDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
       this.tasksBindingSource = new System.Windows.Forms.BindingSource(this.components);
       this.tbNewTaskNumber = new System.Windows.Forms.TextBox();
-      this.tasksTableAdapter = new CollectWords.db1DataSetTableAdapters.TATasks();
+      this.taTasks = new CollectWords.db1DataSetTableAdapters.TATasks();
       this.tAProjects = new CollectWords.db1DataSetTableAdapters.TAProjects();
       this.rbCollectNewTasksWords = new System.Windows.Forms.RadioButton();
       this.rbShowPreviouslyCollectedWords = new System.Windows.Forms.RadioButton();
@@ -564,9 +564,9 @@
       this.tbNewTaskNumber.TabIndex = 35;
       this.tbNewTaskNumber.TextChanged += new System.EventHandler(this.tbNewTaskNumber_TextChanged);
       // 
-      // tasksTableAdapter
+      // taTasks
       // 
-      this.tasksTableAdapter.ClearBeforeFill = true;
+      this.taTasks.ClearBeforeFill = true;
       // 
       // tAProjects
       // 
@@ -707,7 +707,7 @@
     private System.Windows.Forms.DataGridViewTextBoxColumn idTaskDataGridViewTextBoxColumn;
     private System.Windows.Forms.BindingSource tasksBindingSource;
     private db1DataSet db1DataSet;
-    private db1DataSetTableAdapters.TATasks tasksTableAdapter;
+    private db1DataSetTableAdapters.TATasks taTasks;
     private System.Windows.Forms.Button btnShowWords;
     private System.Windows.Forms.BindingSource projectsBindingSource;
     private db1DataSetTableAdapters.TAProjects tAProjects;
